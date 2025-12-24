@@ -6,6 +6,13 @@ This project is designed for **archiving and editing Twitch streams with zero qu
 
 ---
 
+## Preview
+
+![Recorder UI](https://i.imgur.com/EGdoduq.png)
+![Lossless cutting demo](https://i.imgur.com/kxDt2Hw.gif)
+
+---
+
 ## Features
 
 - Monitor a single streamer by **login name** (e.g. `H0llyLP`)
