@@ -264,58 +264,6 @@ public partial class MainForm : Form
         }));
     }
 
-    private async Task SplitNowAsync()
-    {
-        if (_recorder == null || _twitch == null) return;
-
-        if (!await _manualSplitLock.WaitAsync(0))
-            return;
-
-        try
-        {
-            if (_stopping) return;
-
-            if (!_recorder.IsRecording)
-                return;
-
-            var snap = _lastLiveSnapshot;
-            if (snap == null || !snap.IsLive)
-            {
-                AppendLog("Cannot split: stream snapshot unavailable or stream is offline.");
-                return;
-            }
-
-            _manualSplitInProgress = true;
-            BeginInvoke(new Action(() => SetStatus("Splitting (manual)...")));
-
-            var twitchUrl = $"https://twitch.tv/{snap.UserLogin}";
-            var newRawPath = BuildSegmentPath(txtOutputDir.Text, snap);
-
-            AppendLog($"Manual split: starting new segment: {newRawPath}");
-
-            await Task.Run(async () =>
-            {
-                await _recorder.RestartAsync(twitchUrl, newRawPath, CancellationToken.None)
-                               .ConfigureAwait(false);
-            });
-
-            BeginInvoke(new Action(() =>
-            {
-                SetFile(Path.GetFileName(Path.ChangeExtension(newRawPath, ".mp4")));
-            }));
-        }
-        catch (Exception ex)
-        {
-            AppendLog("Manual split failed: " + ex);
-        }
-        finally
-        {
-            _manualSplitInProgress = false;
-            _manualSplitLock.Release();
-            BeginInvoke(new Action(() => UpdateStatusFromState(_lastLiveSnapshot)));
-        }
-    }
-
     private async Task MonitorLoopAsync(string streamer, CancellationToken ct)
     {
         if (_twitch == null || _recorder == null)
@@ -603,13 +551,6 @@ public partial class MainForm : Form
 
     private void InitCutter()
     {
-        if (_segments.Columns.Count == 0)
-        {
-            _segments.Columns.Add("Start", 110);
-            _segments.Columns.Add("End", 110);
-            _segments.Columns.Add("Duration", 110);
-        }
-
         Core.Initialize();
         _libVlc = new LibVLC();
         _mp = new MediaPlayer(_libVlc);
@@ -798,7 +739,7 @@ public partial class MainForm : Form
 
         try
         {
-            _btnExport.Enabled = false;
+            tabControl1.Enabled = false;
 
             if (_cutDurationMs <= 0)
             {
@@ -902,7 +843,7 @@ public partial class MainForm : Form
         }
         finally
         {
-            _btnExport.Enabled = true;
+            tabControl1.Enabled = true;
         }
     }
 
