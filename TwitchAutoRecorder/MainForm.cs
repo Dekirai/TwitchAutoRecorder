@@ -40,6 +40,7 @@ public partial class MainForm : Form
     private string? _cutInputPath;
     private long? _markInMs;
     private long? _markOutMs;
+    private Media? _media;
 
     private sealed record Segment(long StartMs, long EndMs);
     private readonly List<Segment> _segmentsList = new();
@@ -623,6 +624,49 @@ public partial class MainForm : Form
         _btnPlayPause.Text = "Pause";
     }
 
+    private void UnloadVideo()
+    {
+        if (InvokeRequired)
+        {
+            BeginInvoke(UnloadVideo);
+            return;
+        }
+
+        try
+        {
+            if (_mp != null)
+            {
+                if (_mp.IsPlaying)
+                    _mp.Stop();
+
+                _mp.Media = null;
+            }
+
+            _videoView.MediaPlayer = null;
+
+            _media?.Dispose();
+            _media = null;
+
+            _mp?.Dispose();
+            _mp = null;
+            _libVlc?.Dispose();
+            _libVlc = null;
+
+            _timeline.Value = 0;
+            _lblTime.Text = "00:00:00.000 / 00:00:00.000";
+            _lblIn.Text = "Start cut: -";
+            _lblOut.Text = "End cut: -";
+            _segments.Items.Clear();
+
+            AppendLog("Video unloaded — file handle released.");
+        }
+        catch (Exception ex)
+        {
+            AppendLog("Failed to unload video: " + ex.Message);
+        }
+    }
+
+
     private void CutPlayPause()
     {
         if (_mp == null) return;
@@ -835,6 +879,7 @@ public partial class MainForm : Form
 
             MessageBox.Show("Export complete:\n" + outputPath, "Done");
 
+
             try { Directory.Delete(tempDir, true); } catch { }
         }
         catch (Exception ex)
@@ -961,5 +1006,10 @@ public partial class MainForm : Form
     private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
     {
         SaveConfig();
+    }
+
+    private void _btnUnload_Click(object sender, EventArgs e)
+    {
+        UnloadVideo();
     }
 }

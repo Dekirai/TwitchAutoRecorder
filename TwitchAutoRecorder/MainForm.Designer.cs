@@ -54,6 +54,7 @@
             _btnExport = new Button();
             _txtOutput = new TextBox();
             label9 = new Label();
+            _btnUnload = new Button();
             ((System.ComponentModel.ISupportInitialize)nudPollSeconds).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudDelayMinutes).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudDebouncePolls).BeginInit();
@@ -352,6 +353,7 @@
             // 
             // tabPage2
             // 
+            tabPage2.Controls.Add(_btnUnload);
             tabPage2.Controls.Add(_segments);
             tabPage2.Controls.Add(_videoView);
             tabPage2.Controls.Add(_lblTime);
@@ -484,7 +486,7 @@
             // 
             // _btnPlayPause
             // 
-            _btnPlayPause.Location = new Point(101, 38);
+            _btnPlayPause.Location = new Point(182, 38);
             _btnPlayPause.Name = "_btnPlayPause";
             _btnPlayPause.Size = new Size(75, 23);
             _btnPlayPause.TabIndex = 4;
@@ -525,6 +527,16 @@
             label9.TabIndex = 0;
             label9.Text = "Output:";
             // 
+            // _btnUnload
+            // 
+            _btnUnload.Location = new Point(101, 38);
+            _btnUnload.Name = "_btnUnload";
+            _btnUnload.Size = new Size(75, 23);
+            _btnUnload.TabIndex = 15;
+            _btnUnload.Text = "Unload file";
+            _btnUnload.UseVisualStyleBackColor = true;
+            _btnUnload.Click += _btnUnload_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -535,7 +547,7 @@
             MaximizeBox = false;
             Name = "MainForm";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "Twitch Auto Recorder - Created by Dekirai";
+            Text = "Twitch Auto Recorder + Cutter | Created by Dekirai";
             FormClosing += MainForm_FormClosing;
             ((System.ComponentModel.ISupportInitialize)nudPollSeconds).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudDelayMinutes).EndInit();
@@ -605,5 +617,6 @@
         private ColumnHeader columnHeader1;
         private ColumnHeader columnHeader2;
         private ColumnHeader columnHeader3;
+        private Button _btnUnload;
     }
 }
