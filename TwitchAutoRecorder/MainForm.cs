@@ -75,6 +75,9 @@ public partial class MainForm : Form
             DisposeCutter();
         };
 
+        Core.Initialize();
+        _libVlc = new LibVLC();
+
         LoadConfig();
         DetectTools();
         InitCutter();
@@ -552,8 +555,9 @@ public partial class MainForm : Form
 
     private void InitCutter()
     {
-        Core.Initialize();
-        _libVlc = new LibVLC();
+        if (_libVlc == null)
+            return;
+
         _mp = new MediaPlayer(_libVlc);
         _videoView.MediaPlayer = _mp;
 
@@ -589,6 +593,24 @@ public partial class MainForm : Form
         _libVlc = null;
     }
 
+    private void LoadVideo(string path)
+    {
+        if (_libVlc == null)
+            throw new InvalidOperationException("LibVLC is not initialized.");
+
+        UnloadVideo();
+
+        _mp = new MediaPlayer(_libVlc);
+        _videoView.MediaPlayer = _mp;
+
+        _media = new Media(_libVlc, new Uri(path));
+        _mp.Media = _media;
+
+        _mp.Play();
+        _btnPlayPause.Text = "Pause";
+    }
+
+
     private void CutOpenFile()
     {
         using var ofd = new OpenFileDialog
@@ -615,13 +637,14 @@ public partial class MainForm : Form
         );
         _txtOutput.Text = outDefault;
 
-        if (_mp == null) return;
-
-        _mp.Stop();
-        using var media = new Media(_libVlc!, new Uri(_cutInputPath));
-        _mp.Media = media;
-        _mp.Play();
-        _btnPlayPause.Text = "Pause";
+        try
+        {
+            LoadVideo(_cutInputPath);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Failed to load video:\n" + ex.Message, "Error");
+        }
     }
 
     private void UnloadVideo()
@@ -636,9 +659,7 @@ public partial class MainForm : Form
         {
             if (_mp != null)
             {
-                if (_mp.IsPlaying)
-                    _mp.Stop();
-
+                try { _mp.Stop(); } catch { }
                 _mp.Media = null;
             }
 
@@ -649,8 +670,6 @@ public partial class MainForm : Form
 
             _mp?.Dispose();
             _mp = null;
-            _libVlc?.Dispose();
-            _libVlc = null;
 
             _timeline.Value = 0;
             _lblTime.Text = "00:00:00.000 / 00:00:00.000";
@@ -658,14 +677,13 @@ public partial class MainForm : Form
             _lblOut.Text = "End cut: -";
             _segments.Items.Clear();
 
-            AppendLog("Video unloaded — file handle released.");
+            AppendLog("Video unloaded (ready for new file).");
         }
         catch (Exception ex)
         {
-            AppendLog("Failed to unload video: " + ex.Message);
+            AppendLog("UnloadVideo failed: " + ex.Message);
         }
     }
-
 
     private void CutPlayPause()
     {
